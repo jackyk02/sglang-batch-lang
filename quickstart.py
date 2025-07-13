@@ -4,12 +4,27 @@ from PIL import Image
 import numpy as np
 import os
 
-def get_batch_actions(instruction, image_path, batch_size=3, temperature=1.0):
+def get_batch_actions(instructions, image_path, temperature=1.0):
+    """
+    Get batch actions for multiple instructions.
+    
+    Args:
+        instructions: List of instruction strings or a single instruction string
+        image_path: Path to the image file
+        temperature: Temperature for sampling
+    
+    Returns:
+        Tuple of (output_ids, actions) as numpy arrays
+    """
     image_path = os.path.abspath(image_path)
+    
+    # Handle both single instruction and list of instructions
+    if isinstance(instructions, str):
+        instructions = [instructions]
+    
     payload = {
-        "instruction": instruction,
+        "instructions": instructions,
         "image_path": image_path,
-        "batch_size": batch_size,
         "temperature": temperature
     }
 
@@ -21,13 +36,17 @@ def get_batch_actions(instruction, image_path, batch_size=3, temperature=1.0):
     res.raise_for_status()
     return np.array(json.loads(res.text)["output_ids"]), np.array(json.loads(res.text)["actions"])
 
-instruction = "close the drawer"
+# Example with multiple different instructions
+instructions = [
+    "close the drawer",
+    "open the drawer", 
+    "pick up the cup"
+]
 image_path = "vla/example.jpg"
 
 actions = get_batch_actions(
-    instruction=instruction,
+    instructions=instructions,
     image_path=image_path,
-    batch_size=3,
     temperature=1.0
 )
 
